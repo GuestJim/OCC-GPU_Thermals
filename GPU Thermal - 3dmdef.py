@@ -1,9 +1,4 @@
 import os, sys, subprocess, time, psutil, shutil, datetime
-#	for Intel CPUs, uses Power Gadget
-#		https://software.intel.com/en-us/articles/intel-power-gadget
-#	for AMD CPUs, uses uProf and GPUz (to get the CPU temperature)
-#		https://developer.amd.com/amd-uprof/
-#		https://www.techpowerup.com/gpuz/
 
 print("\tUses GPU-z")
 print("\thttps://www.techpowerup.com/gpuz/")
