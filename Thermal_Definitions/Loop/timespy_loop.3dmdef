@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<benchmark>
+
+  <application_info>
+    <selected_workloads>
+      <selected_workload name="TimeSpyGt1PST"/>
+    </selected_workloads>
+  </application_info>
+
+<!-- one loop is approximately 60 seconds -->
+
+	<settings>
+		<setting>
+			<name>loop_count</name>
+			<value>30</value>
+		</setting>
+	</settings>
+
+</benchmark>
