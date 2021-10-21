@@ -15,7 +15,7 @@ In theory any GPU load can be used, provided it can be started, stopped, and loo
 	- [readr](https://readr.tidyverse.org/)
 	- [ggplot2](https://ggplot2.tidyverse.org/index.html)
 	- [tidyr](https://tidyr.tidyverse.org/)
-- [3DMark Professional Edition]
+- 3DMark Professional Edition
 - [GPU-z](https://www.techpowerup.com/gpuz/)
 
 ### To Use:
