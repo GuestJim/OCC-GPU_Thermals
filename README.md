@@ -1,6 +1,6 @@
 # OCC-GPU_Thermals
 
-This repository contains scripts similar to those in [OCC-CPU_Thermals][https://github.com/GuestJim/OCC-CPU_Thermals] but for testing GPUs instead of CPUs.
+This repository contains scripts similar to those in [OCC-CPU_Thermals](https://github.com/GuestJim/OCC-CPU_Thermals) but for testing GPUs instead of CPUs.
 Like the CPU scripts, this will initiate the recording of certain metrics (GPU temperature, clock speed, VRAM clock speed, and power usage), then wait for a Warm-up Period before beginning some load to stress the GPU.
 After this load completes, a Cooldown Period of the same length as the test period, one hour by default, during which monitoring continues so we can see how the graphics card cools down.
 
