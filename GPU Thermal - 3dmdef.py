@@ -1,13 +1,27 @@
-import os, sys, subprocess, time, psutil, shutil, datetime
+import os, sys, subprocess, time, psutil, shutil
 
-print("\tUses GPU-z")
-print("\thttps://www.techpowerup.com/gpuz/")
-print("\tGPU-z needs to place its Sensor Log on the Desktop")
-print("")
+os.system("title GPU Thermal Testing")
+
+print("Uses GPU-z\
+\n\thttps://www.techpowerup.com/gpuz/\
+\n\tGPU-z needs to place its Sensor Log in the folder with the Scripts\
+\n")
+print("3DMark tests require Professional Edition")
+
+#	defaults
+duration	=	3600
+#	length of Load period
+warm		=	300
+#	length of Warm-up Period
+coolCOEF	=	1
+#	ratio between Load and Cooldown periods
+pulse	=	"NULL"
+#	length of pause between loads, if test is pulsing
 
 #	shortcut name lists
 lnkGPUz			=	"GPU-z.lnk"
 lnk3DMark		=	"3DMarkCmd.lnk"
+lnkPresentMon	=	"PresentMon.lnk"
 
 scriptPath	=	sys.argv[0].rsplit("\\", 1)[0] + "\\"
 
@@ -21,12 +35,14 @@ def lnkCheck(LNK):
 
 lnkGPUz			=	lnkCheck(lnkGPUz)
 lnk3DMark		=	lnkCheck(lnk3DMark)
+lnkPresentMon	=	lnkCheck(lnkPresentMon)
 
 def INPUT(DEFAULT, TEXT = "Default: !DEF!"):
 	return(input(TEXT.replace("!DEF!", str(DEFAULT))) or DEFAULT)
 #	to make changing the default value easier
 
 def	_3DMARK(defin):
+	#	the best practice is likely going to be to run PresentMon to collect globally or OCAT to get the proper EXE name from the CSV
 	if dataPath in defin:
 		return(lnk3DMark + " --definition=\"" + defin + ".3dmdef\" --loop=0 --audio=off --online=off")
 	elif os.path.exists(scriptPath + "Thermal_Definitions\\" + defin + ".3dmdef"):
@@ -34,46 +50,56 @@ def	_3DMARK(defin):
 	else:
 		return(lnk3DMark + " --definition=" + defin + ".3dmdef --loop=0 --audio=off --online=off")
 
-def _3DMARK_DEF(test, time):
-	if test[0]	==	"1" or test[0] == "2":
-		out	=	"3DMark - "
-		if test[1]	==	"1":
-			out		=	out + "Fire Strike"
-			defin	=	"firestrike"
-			TEST	=	"FireStrikeGt1"
-			LOOP	=	int(time / 30) + 5
-		if test[1]	==	"2":
-			out		=	out + "Time Spy"
-			defin	=	"timespy"
-			TEST	=	"TimeSpyGt1"
-			LOOP	=	int(time / 60) + 5
-		if test[1]	==	"3" or test[1]	==	"4":
-			out		=	out + "Port Royal"
-			defin	=	"portroyal"
-			TEST	=	"PortRoyalGt1"
-			LOOP	=	int(time / 108) + 5
-		if test[1]	==	"4":
-			out		=	out + " (RT Off)"
-			
-		if test[2]	==	"0":
-			out		=	out + ""
-			defin	=	defin + ""
-			TEST	=	TEST + "P"
-		if test[2]	==	"1":
-			out		=	out + " - Extreme"
-			defin	=	defin + "_extreme"
-			TEST	=	TEST + "X"
-		if test[2]	==	"2":
-			out		=	out + " - Ultra"
-			defin	=	defin + "_ultra"
-			TEST	=	TEST + "R"
-		
-		if test[0] == "1":
-			return([out, defin])
-		elif test[0]	==	"2":
-			out	=	out + " - Loop"
-			TEST	=	TEST + "ST"
-			defin =	defin + "_loop"
+def _3DMARK_DEF(CODE, time):
+	global	TESTname
+	global	TESTexe
+	global	TESTlen
+
+	TESTname	=	"3DMark - "
+	if CODE[1]	==	"1":
+		TESTname	=	TESTname + "Fire Strike"
+		TESTexe		=	"3DMarkICFWorkload.exe"
+		defin	=	"firestrike"
+		TEST	=	"FireStrikeGt1"
+		TESTlen	=	30
+	if CODE[1]	==	"2":
+		TESTname	=	TESTname + "Time Spy"
+		TESTexe		=	"3DMarkTimeSpy.exe"
+		defin	=	"timespy"
+		TEST	=	"TimeSpyGt1"
+		TESTlen	=	60
+	if CODE[1]	==	"3" or CODE[1]	==	"4":
+		TESTname		=	TESTname + "Port Royal"
+		TESTexe			=	"3DMarkPortRoyal.exe"
+		defin	=	"portroyal"
+		TEST	=	"PortRoyalGt1"
+		TESTlen	=	108
+	if CODE[1]	==	"4":
+		TESTname		=	TESTname + " (RT Off)"
+		defin	=	defin + "_rtoff"
+	
+	LOOP	=	int(time / TESTlen) + 5
+	
+	if CODE[2]	==	"0":
+		TESTname		=	TESTname + ""
+		defin	=	defin + ""
+		TEST	=	TEST + "P"
+	if CODE[2]	==	"1":
+		TESTname		=	TESTname + " - Extreme"
+		defin	=	defin + "_extreme"
+		TEST	=	TEST + "X"
+	if CODE[2]	==	"2":
+		TESTname		=	TESTname + " - Ultra"
+		defin	=	defin + "_ultra"
+		TEST	=	TEST + "R"
+	
+	if CODE[0] == "2":
+		TESTname	=	TESTname + " - Pulse"
+		return(defin)
+	elif CODE[0]	==	"1":
+		TESTname	=	TESTname + " - Loop"
+		TEST	=	TEST + "ST"
+		defin =	defin + "_loop"
 
 	XML	=	str("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
 <benchmark>\n\
@@ -98,7 +124,7 @@ def _3DMARK_DEF(test, time):
 \n\
 </benchmark>")
 
-	if test[1] == 4:
+	if CODE[1] == 4:
 		XML	=	XML.replace("!OPTS!", "\
 	<setting>\
 		<name>reflection_mode</name>\
@@ -115,7 +141,28 @@ def _3DMARK_DEF(test, time):
 	with open(dataPath + defin + ".3dmdef", 'w') as fout:
 		fout.write(XML)
 		fout.close()
-	return([out, dataPath + defin])
+	return(dataPath + defin)
+
+opt3DM	=	[
+	"10 \t-\t 3DMark Fire Strike (1080p)",
+	"11 \t-\t 3DMark Fire Strike Extreme (1440p)",
+	"12 \t-\t 3DMark Fire Strike Ultra (2160p)",
+	"",
+	"20 \t-\t 3DMark Time Spy (1440p)",
+	"21 \t-\t 3DMark Time Spy Extreme (2160p)",
+	"",
+	"30 \t-\t 3DMark Port Royal (1440p)",
+	# "40 \t-\t 3DMark Port Royal RT Off (1440p)",
+	]
+opt3DMseam	=	["1" + x	if x != ""	else ""	for x in opt3DM]
+opt3DMrepe	=	["2" + x	if x != ""	else ""	for x in opt3DM]
+
+opt3DMark	=	[
+	"It is necessary for this console to be focused for 3DMark to launch correctly",
+	"Seamless Looping"] + opt3DMseam + [
+	"",
+	"Pulsing Runs with Loading and Pulse Pause"] + opt3DMrepe
+
 
 def	kill(proc_pid):
     process	=	psutil.Process(proc_pid)
@@ -123,52 +170,62 @@ def	kill(proc_pid):
         proc.kill()
     process.kill()
 
+def timeFUT(END):
+	return(time.strftime("%I:%M %p", time.localtime(time.time() + END)))
+
+#	may need to overhaul this and more if additional benchmarks than 3DMark are added
+def PULSEx(TEST):
+	t_end	=	time.time() + duration
+
+	while time.time() < t_end:
+		Bench	=	subprocess.Popen(TEST, shell = True)
+
+		#	Bench.wait() with checking
+		while Bench.poll() is None:
+			if	time.time() >= t_end:
+				kill(Bench.pid)
+				Bench.kill()
+				return
+			time.sleep(1)
+
+		#	time.sleep() with checking
+		t_pulse	=	time.time() + pulse
+		while time.time() < t_pulse:
+			if	time.time() >= t_end:
+				return
+			time.sleep(1)
+	return
+
+OPTIONS	=	[]
+
+if	os.path.exists(scriptPath + lnk3DMark.replace("\"", "")):
+	OPTIONS	=	OPTIONS + opt3DMark + [""]
+if	OPTIONS	==	[]:
+	sys.exit()
 
 GPUname		=	input("GPU Name: ")
 
 COOLERname	=	INPUT("",		"GPU Cooler Name (default empty): ")
 
-zeroRPM		=	INPUT("NULL",	"GPU Zero RPM Threshold (default empty): ")
-maxPOWER	=	INPUT("NULL",	"GPU Maximum Power (default empty): ")
+zeroRPM		=	INPUT("NULL",	"GPU Zero RPM Temperature Threshold (°C: default empty): ")
+maxPOWER	=	INPUT("NULL",	"GPU Maximum Power (W: default empty): ")
 
-# print("Available Tests:")
-print("Available Tests (3DMark requires Professional Edition) :")
-options	=	[
-	"It is necessary for this console to be focused for 3DMark to launch correctly",
-	"110 \t-\t 3DMark Fire Strike (1080p)",
-	"111 \t-\t 3DMark Fire Strike Extreme (1440p)",
-	"112 \t-\t 3DMark Fire Strike Ultra (2160p)",
-	"",
-	"120 \t-\t 3DMark Time Spy (1440p)",
-	"121 \t-\t 3DMark Time Spy Extreme (2160p)",
-	"",
-	"130 \t-\t 3DMark Port Royal (1440p)",
-	# "140 \t-\t 3DMark Port Royal RT Off (1440p)",
-	"",
-	"Hybrid-Looping versions below (repeated seamless-loop runs)",
-	"210 \t-\t 3DMark Fire Strike (1080p)",
-	"211 \t-\t 3DMark Fire Strike Extreme (1440p)",
-	"212 \t-\t 3DMark Fire Strike Ultra (2160p)",
-	"",
-	"220 \t-\t 3DMark Time Spy (1440p)",
-	"221 \t-\t 3DMark Time Spy Extreme (2160p)",
-	"",
-	"230 \t-\t 3DMark Port Royal (1440p)"#,
-	# "240 \t-\t 3DMark Port Royal RT Off (1440p)"
-	]
 
-for OPT in options:
+print("Available Tests :")
+print("")
+for OPT in OPTIONS:
 	print(OPT)
-# test	=	input("Test ID Number (default 100 [Cinebench R20 - Multi-thread - Constant]): ") or str(100)
-test	=	INPUT("110",	"Test ID Number (default !DEF!): ")
+TESTcode	=	INPUT("110",	"Test ID Number (default !DEF!): ")
 
-duration	=	int(INPUT(3600,	"Duration (default !DEF! s) : "))
-warm		=	int(INPUT(300,	"Warmup Duration (default !DEF! s) : "))
-coolCOEF	=	1
+duration	=	int(INPUT(duration,	"Duration (default !DEF! s) : "))
+warm		=	int(INPUT(warm,	"Warmup Duration (default !DEF! s) : "))
+coolCOEF	=	coolCOEF
 length		=	int((1 + coolCOEF)*duration + warm + 1)
+if TESTcode[0]	==	"2":
+	pulse	=	int(INPUT(0, "Pulse Pause in addition to Loading Time (default !DEF! s) : "))
 
 
-TIME	=	datetime.datetime.now().strftime("%Y-%m-%d %H.%M")
+TIME	=	time.strftime("%Y-%m-%d %H.%M", time.localtime())
 
 if COOLERname == "":
 	COOLERfold	=	""
@@ -186,25 +243,40 @@ if not os.path.exists(dataPath):
 if os.path.exists(scriptPath + "GPU-Z Sensor Log.txt"):
 	print("")
 	DEL	=	INPUT("Y", "Old GPU-Z Sensor Log.txt found. Should it be deleted?\nY/n (Y): ")
-	if DEL	==	"Y" or DEL == "y":
+	if DEL.lower()	==	"y" or DEL.lower() == "yes":
 		os.remove(scriptPath + "GPU-Z Sensor Log.txt")
 
 GPUz	=	subprocess.Popen(lnkGPUz + " -minimized", shell=True)
 
-print("\nWarm-up")
+
+if TESTcode[0]	==	"1" or TESTcode[0] == "2":
+	TEST3dmdef	=	_3DMARK_DEF(TESTcode, duration)
+	TEST		=	_3DMARK(TEST3dmdef)
+else:
+	sys.exit()
+
+print("\nWarm-up\tEnds at " + timeFUT(warm))
+
+if os.path.exists(scriptPath + lnkPresentMon):
+	# os.system("start " + lnkPresentMon + " -output_file \"" + dataPath + "PresentMon.csv\" -terminate_on_proc_exit")		#	records all processes
+	# os.system("start " + lnkPresentMon + " -process_name " + TESTexe + " -output_file \"" + dataPath + "PresentMon.csv\" -terminate_on_proc_exit")		#	records until selected process ends
+	os.system("start " + lnkPresentMon + " -process_name " + TESTexe + " -output_file \"" + dataPath + "PresentMon.csv\" -timed " + str(duration + warm + 5) + " -terminate_after_timed")		#	records for length of time
+
 time.sleep(warm)
 
-print("\nGPU Load")
-if test[0]	==	"1" or test[0] == "2":
-	TESTname	=	_3DMARK_DEF(test, duration)[0]
-	TEST3dmdef	=	_3DMARK_DEF(test, duration)[1]
-	Bench		=	subprocess.Popen(_3DMARK(TEST3dmdef), shell = True)
+print("\nGPU Load\tEnds at " + timeFUT(duration))
+
+if TESTcode[0]	==	"1":
+	Bench		=	subprocess.Popen(TEST, shell = True)
 	time.sleep(duration)
+	
+	kill(Bench.pid)
+	Bench.kill()
+if TESTcode[0]	==	"2":
+	PULSEx(TEST)
 
-kill(Bench.pid)
-Bench.kill()
 
-print("\nCooldown")
+print("\nCooldown\tEnds at " + timeFUT(duration*coolCOEF))
 time.sleep(duration * coolCOEF)
 
 kill(GPUz.pid)
@@ -223,14 +295,16 @@ if not os.path.exists(dataPath + "@GPU Thermal - Input.r"):
 	with open(scriptPath + "GPU Thermal - Input.r", 'r') as fref, open(dataPath + "@GPU Thermal - Input.r", 'w') as fout:
 		for line in fref:
 			fout.write(line	\
-				.replace("!TEST!",		TESTname)		\
-				.replace("!GPU!",		GPUname)		\
-				.replace("!COOLER!",	COOLERname)		\
-				.replace("!zRPM!",		str(zeroRPM))		\
-				.replace("!maxPWR!",	str(maxPOWER))		\
+				.replace("!TEST!",		TESTname)	\
+				.replace("!GPU!",		GPUname)	\
+				.replace("!COOLER!",	COOLERname)	\
+				.replace("!zRPM!",		str(zeroRPM))	\
+				.replace("!maxPWR!",	str(maxPOWER))	\
 				.replace("!DUR!",		str(duration))	\
-				.replace("!WARM!",		str(warm))		\
+				.replace("!WARM!",		str(warm))	\
 				.replace("!PATH!",		dataPath.replace("\\", "/"))	\
+				.replace("!PULSE!",		str(pulse))	\
+				.replace("!LEN!",		str(TESTlen))	\
 			)
 		fout.close()
 
