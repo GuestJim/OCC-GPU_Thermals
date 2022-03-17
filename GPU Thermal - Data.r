@@ -90,5 +90,6 @@ diff.CONS	=	function(DATA, DIR = "Forward", lag = 1)	{
 dataALL$GPU_Temp_Diff	=	diff.CONS(dataALL$GPU_Temp)
 
 dataALL	=	dataALL[order(dataALL$Time), ]
+assign("dataALL", dataALL, envir = .GlobalEnv)
 
 # write_csv(dataALL, "Data.csv.bz2")

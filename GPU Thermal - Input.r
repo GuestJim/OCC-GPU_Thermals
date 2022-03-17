@@ -46,7 +46,9 @@ if (file.exists("Data.csv.bz2"))	{
 	dataALL		=	read_csv("Data.csv.bz2", guess_max = 10, lazy = TRUE, show_col_types = FALSE)
 	write_csv(dataALL, "Data.csv.bz2")
 }	else	{
-	source("~GPU Thermal - Data.r")
+	hold	=	new.env()
+	source("~GPU Thermal - Data.r",	local = hold)
+	rm(hold)
 }
 
 if (file.exists("PresentMon.csv.bz2"))	{
@@ -65,5 +67,6 @@ if (min(PresentMon$TimeInSeconds) > warm)	PresentMon$TimeInSeconds	=	PresentMon$
 
 DATA$dataALL	=	dataALL
 DATA$PresentMon	=	PresentMon
+# saveRDS(DATA, "DATA.env", compress="bzip2")
 
 source("@GPU Thermal - Output.r")
