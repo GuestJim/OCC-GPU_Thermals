@@ -1,5 +1,5 @@
 if (file.exists("PresentMon.csv"))	{
-	PresentMon	=	read_csv("PresentMon.csv")
+	PresentMon	=	read_csv("PresentMon.csv", guess_max = 10, lazy = TRUE, show_col_types = FALSE)
 	PresentMon.small	=	PresentMon[, c(
 		"Application",
 		# "ProcessID",
@@ -23,7 +23,7 @@ if (file.exists("PresentMon.csv"))	{
 	write_csv(PresentMon.small, "PresentMon.csv.bz2")
 }
 
-GPUz	=	read_csv("GPU-Z Sensor Log.txt")
+GPUz	=	read_csv("GPU-Z Sensor Log.txt", guess_max = 10, lazy = TRUE, show_col_types = FALSE)
 POWER	=	NULL
 if (grepl("Vega", GPUname, ignore.case = TRUE))	POWER	=	"GPU Chip Power Draw [W]"
 #	RX Vega GPUs do not give a separate Board Power value, making it necessary to selectively search for it
@@ -91,4 +91,4 @@ dataALL$GPU_Temp_Diff	=	diff.CONS(dataALL$GPU_Temp)
 
 dataALL	=	dataALL[order(dataALL$Time), ]
 
-write_csv(dataALL, "Data.csv.bz2")
+# write_csv(dataALL, "Data.csv.bz2")
