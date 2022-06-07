@@ -76,7 +76,8 @@ PERIODS	=	function(DATA,	BREAKS = c(warm, duration),	LABELS = levsPER){
 	if	(BREAKS[1] + BREAKS[2] < DATA)						return(ordered(LABELS[3], LABELS))
 }
 
-dataALL$Period	=	sapply(dataALL$Time, PERIODS)
+# dataALL$Period	=	sapply(dataALL$Time, PERIODS)
+dataALL$Period	=	cut(dataALL$Time, c(min(dataALL$Time), warm, duration, max(dataALL$Time)), labels = levsPER, include.lowest = TRUE, ordered_result = TRUE)
 dataALL$Time	=	dataALL$Time - warm
 dataALL$GPU		=	ordered(GPUname)
 dataALL$Cooler	=	ordered(COOLERname)
