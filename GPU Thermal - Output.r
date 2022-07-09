@@ -25,6 +25,7 @@ if	(!is.numeric(FREQ.COEF))	{
 	# FREQ.COEF	=	nearFLOOR(maxPWR/maxCLK, 0.1)
 	FREQ.COEF	=	signif(exp(round(log(maxPWR/maxCLK), 0)), 1)
 }
+if (FREQ.COEF < 1)	FREQ.COEF	<-	1 / FREQ.COEF
 
 stats		=	function(DATA)	{
 	return(c(
@@ -360,7 +361,7 @@ themeSCALES	=	function(COEF = FREQ.COEF){
 			expand		=	c(0.02, 0),
 			sec.axis	=	dup_axis(
 				name	=	"Frequency (MHz)",
-				labels	=	function(IN)	IN / COEF
+				labels	=	function(IN)	IN * COEF
 				)
 			),
 		COLORS
@@ -604,7 +605,7 @@ graphHIST	=	function(TYPE, TITLE, X.name, X.break, X.limits, FILL.unit, FILL.mid
 	}
 	if	(binWID != 1)	X.name		=	paste0(X.name, "\nBin Width: ", binWID)
 
-	ggplot(data = dataALL, aes(x = get(TYPE)*COEF)) +
+	ggplot(data = dataALL, aes(x = get(TYPE) / COEF)) +
 	ggtitle(			TITLE,
 		subtitle	=	"Histograms & Box Plots with Red Mean Line") + CAPTION + 
 	# scale_fill_gradient2(FILL.unit, low="blue", mid = "green", midpoint = FILL.mid,  high="red", limits = FILL.limits, breaks = FILL.breaks, oob = oob_squish) + 
@@ -619,7 +620,7 @@ graphHIST	=	function(TYPE, TITLE, X.name, X.break, X.limits, FILL.unit, FILL.mid
 	geom_boxplot(outlier.alpha = 0, 				coef = 0,	width = Inf,	position = position_nudge(y = 0.5)) + 
 	geom_histogram(aes(y = stat(ndensity),	fill = after_stat(x)),	binwidth = binWID) + 
 	geom_boxplot(outlier.alpha = 0, alpha = 0.15,	coef = 0,	width = Inf,	position = position_nudge(y = 0.5)) + 
-	geom_vline(data = aggregate(dataALL[, paste0(TYPE)], GROUPS, mean, na.rm = TRUE),	aes(xintercept = x*COEF), 	color = "red") +
+	geom_vline(data = aggregate(dataALL[, paste0(TYPE)], GROUPS, mean, na.rm = TRUE),	aes(xintercept = x / COEF), 	color = "red") +
 	# facet_grid(rows = vars(Period), switch = "y", labeller = labeller(Period = label_wrap_gen(20))) +
 	facet_grid(rows = vars(Period), switch = "y",
 		labeller = labeller(Period = function(IN) gsub(" - ", "\n", IN))
