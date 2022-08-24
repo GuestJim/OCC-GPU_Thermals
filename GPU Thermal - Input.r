@@ -70,3 +70,38 @@ DATA$PresentMon	=	PresentMon
 # saveRDS(DATA, "DATA.env", compress="bzip2")
 
 source("@GPU Thermal - Output.r")
+
+
+sinkTXT()
+sinkHTML()
+
+message("Course")
+customSave("Course",	plot = graphMEAN())
+message("Temperature by Period")
+customSave("Hist - Temperature",	plot = HIST.Temp,		width	=	gHEIGH * 1.25)
+message("Frequency by Period")
+customSave("Hist - Frequency",		plot = HIST.Frequency,	width	=	gHEIGH * 1.25)
+message("GPU Power by Period")
+customSave("Hist - Power",			plot = HIST.Socket,		width	=	gHEIGH * 1.25)
+if (!is.null(PresentMon))	{
+	message("FPS")
+	customSave("FPS",	plot = graphFPS())
+	message("Frame Time Histogram")
+	customSave("Hist - Frame",			plot = HIST.Frame,		width	=	gHEIGH * 1.25,	height	=	gHEIGH * 0.666)
+}
+# message("GPU Frequency vs Voltage")
+# customSave("Freq-Volt",			plot = graphFrVo(),		width	=	gHEIGH * 1.25)
+
+#	Time Series graph creation
+if (!graphTS)	stop()
+if (!exists("pulseTSoff"))	pulseTSoff	=	0	#in case the offset has not been set in Input.r
+if (!is.null(PresentMon))	{
+	message("Time Series - Frame Time")
+	customSave("TS - Frame",		plot = frameTS(),												width	=	gHEIGH * 1.25)
+}
+message("Time Series - GPU Clock")
+customSave("TS - Frequency",		plot = frameTS(duration/(testLEN + pulseTSoff), "GPU_Clock"),	width	=	gHEIGH * 1.25)
+message("Time Series - GPU Power")
+customSave("TS - Power",			plot = frameTS(duration/(testLEN + pulseTSoff), "GPU_Power"),	width	=	gHEIGH * 1.25)
+message("Time Series - Temperature")
+customSave("TS - Temperature",		plot = frameTS(duration/(testLEN + pulseTSoff), "GPU_Temp"),	width	=	gHEIGH * 1.25)
